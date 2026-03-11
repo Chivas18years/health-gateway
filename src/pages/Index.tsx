@@ -1,4 +1,4 @@
-import { Stethoscope, ArrowLeft, Lock } from "lucide-react";
+import { Stethoscope, Lock } from "lucide-react";
 import { useFormStepper } from "@/hooks/useFormStepper";
 import HeroSection from "@/components/HeroSection";
 import StepIndicator from "@/components/StepIndicator";
@@ -9,8 +9,8 @@ import SuccessPage from "@/components/SuccessPage";
 
 const Index = () => {
   const {
-    step, step1Data, step2Data, errors, isSuccess, isProcessing,
-    setStep1Data, setStep2Data, goNext, goBack, startForm, simulatePayment,
+    step, step1Data, step2Data, errors, isSuccess, isProcessing, pixData, paymentError,
+    setStep1Data, setStep2Data, goNext, goBack, startForm, submitPayment,
   } = useFormStepper();
 
   if (isSuccess) return <SuccessPage />;
