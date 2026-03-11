@@ -60,7 +60,9 @@ const Index = () => {
               <StepCheckout
                 necessidade={step2Data.necessidade}
                 isProcessing={isProcessing}
-                onPay={simulatePayment}
+                pixData={pixData}
+                paymentError={paymentError}
+                onPay={submitPayment}
                 onBack={goBack}
               />
             )}
