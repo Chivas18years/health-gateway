@@ -1,31 +1,34 @@
 import { useState } from "react";
-import { QrCode, Copy, Check, Lock, Loader2 } from "lucide-react";
-import type { Step2Data } from "@/hooks/useFormStepper";
+import { QrCode, Copy, Check, Lock, Loader2, AlertCircle } from "lucide-react";
+import type { Step2Data, PixData } from "@/hooks/useFormStepper";
 
 interface StepCheckoutProps {
   necessidade: Step2Data["necessidade"];
   isProcessing: boolean;
+  pixData: PixData | null;
+  paymentError: string | null;
   onPay: () => void;
   onBack: () => void;
 }
 
-const PIX_CODE = "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890520400005303986540559.905802BR5925MEDDIGITAL SERVICOS MEDIC6009SAO PAULO62070503***6304ABCD";
+const FALLBACK_PIX_CODE = "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890520400005303986540559.905802BR5925MEDDIGITAL SERVICOS MEDIC6009SAO PAULO62070503***6304ABCD";
 
-const StepCheckout = ({ necessidade, isProcessing, onPay, onBack }: StepCheckoutProps) => {
+const StepCheckout = ({ necessidade, isProcessing, pixData, paymentError, onPay, onBack }: StepCheckoutProps) => {
   const [copied, setCopied] = useState(false);
 
   const valor = necessidade === "atestado" ? "R$ 59,90" : "R$ 89,90";
   const descricao = necessidade === "atestado" ? "Avaliação de Sintomas + Atestado Médico" : "Teleconsulta por Videoconferência";
 
+  const pixCode = pixData?.brCode ?? FALLBACK_PIX_CODE;
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(PIX_CODE);
+      await navigator.clipboard.writeText(pixCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback
       const ta = document.createElement("textarea");
-      ta.value = PIX_CODE;
+      ta.value = pixCode;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
@@ -51,10 +54,18 @@ const StepCheckout = ({ necessidade, isProcessing, onPay, onBack }: StepCheckout
         </div>
       </div>
 
-      {/* QR Code placeholder */}
+      {/* QR Code */}
       <div className="flex flex-col items-center py-8 rounded-xl border border-dashed border-border bg-muted/30 mb-4">
-        <div className="w-40 h-40 rounded-xl bg-muted flex items-center justify-center mb-3">
-          <QrCode className="w-20 h-20 text-muted-foreground/40" />
+        <div className="w-40 h-40 rounded-xl bg-muted flex items-center justify-center mb-3 overflow-hidden">
+          {pixData?.qrCodeImage ? (
+            <img
+              src={pixData.qrCodeImage}
+              alt="QR Code PIX"
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <QrCode className="w-20 h-20 text-muted-foreground/40" />
+          )}
         </div>
         <p className="text-xs text-muted-foreground">QR Code PIX · Woovi</p>
       </div>
@@ -77,7 +88,15 @@ const StepCheckout = ({ necessidade, isProcessing, onPay, onBack }: StepCheckout
         )}
       </button>
 
-      {/* Pay button (simulates Woovi /api/v1/charge) */}
+      {/* Payment error */}
+      {paymentError && (
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 mb-4 text-sm text-destructive">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{paymentError}</span>
+        </div>
+      )}
+
+      {/* Pay button (POST /api/charge) */}
       <button
         onClick={onPay}
         disabled={isProcessing}
