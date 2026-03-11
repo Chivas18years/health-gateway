@@ -29,10 +29,17 @@ const step2SchemaTeleconsulta = step2SchemaBase.extend({
 export type Step1Data = z.infer<typeof step1Schema>;
 export type Step2Data = { necessidade: "atestado"; sintomas: string; tempoInicio: string } | { necessidade: "teleconsulta" };
 
+export interface PixData {
+  brCode: string;
+  qrCodeImage: string; // base64 or URL returned by the API
+}
+
 export interface FormData {
   step1: Step1Data;
   step2: Step2Data;
 }
+
+const CHARGE_API_URL = "https://SEU-PROJETO-BACKEND.vercel.app/api/charge";
 
 export function useFormStepper() {
   const [step, setStep] = useState(0); // 0=hero, 1-3=form steps
@@ -41,6 +48,8 @@ export function useFormStepper() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [pixData, setPixData] = useState<PixData | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const validateStep1 = useCallback(() => {
     const result = step1Schema.safeParse(step1Data);
@@ -81,16 +90,49 @@ export function useFormStepper() {
 
   const startForm = useCallback(() => setStep(1), []);
 
-  const simulatePayment = useCallback(async () => {
+  const submitPayment = useCallback(async () => {
     setIsProcessing(true);
-    // Simulate Woovi API call POST /api/v1/charge
-    await new Promise((r) => setTimeout(r, 2000));
-    setIsProcessing(false);
-    setIsSuccess(true);
-  }, []);
+    setPaymentError(null);
+    try {
+      const response = await fetch(CHARGE_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer: {
+            nome: step1Data.nome,
+            cpf: step1Data.cpf,
+            email: step1Data.email,
+            celular: step1Data.celular,
+          },
+          service: {
+            necessidade: step2Data.necessidade,
+            ...(step2Data.necessidade === "atestado" && {
+              sintomas: step2Data.sintomas,
+              tempoInicio: step2Data.tempoInicio,
+            }),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.message ?? `Erro ${response.status}: falha ao processar pagamento.`);
+      }
+
+      const data = await response.json();
+      // Expected API response shape: { brCode: string, qrCodeImage: string }
+      setPixData({ brCode: data.brCode, qrCodeImage: data.qrCodeImage });
+      setIsSuccess(true);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao conectar com o servidor. Tente novamente.";
+      setPaymentError(message);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [step1Data, step2Data]);
 
   return {
-    step, step1Data, step2Data, errors, isSuccess, isProcessing,
-    setStep1Data, setStep2Data, goNext, goBack, startForm, simulatePayment, setErrors,
+    step, step1Data, step2Data, errors, isSuccess, isProcessing, pixData, paymentError,
+    setStep1Data, setStep2Data, goNext, goBack, startForm, submitPayment, setErrors,
   };
 }
