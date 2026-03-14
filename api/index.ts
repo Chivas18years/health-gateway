@@ -5,7 +5,7 @@ const app = new Hono().basePath('/api')
 
 app.get('/', (c) => c.json({ 
   status: 'Motor Online 🚀', 
-  message: 'Samuel, agora o sistema está no padrão oficial da Vercel!' 
+  message: 'Echo é o capitão 🛡️ !' 
 }))
 
 // Rota de cobrança (mesma lógica de antes)
