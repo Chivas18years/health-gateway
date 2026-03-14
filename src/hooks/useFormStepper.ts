@@ -13,7 +13,7 @@ const step1Schema = z.object({
 });
 
 const step2SchemaBase = z.object({
-  necessidade: z.enum(["atestado", "teleconsulta"], { required_error: "Selecione uma opção" }),
+  necessidade: z.enum(["atestado" as const, "teleconsulta" as const], { error: "Selecione uma opção" }),
 });
 
 const step2SchemaAtestado = step2SchemaBase.extend({
@@ -39,7 +39,7 @@ export interface FormData {
   step2: Step2Data;
 }
 
-const CHARGE_API_URL = "https://SEU-PROJETO-BACKEND.vercel.app/api/charge";
+const CHARGE_API_URL = "https://health-gateway.vercel.app/api/charge";
 
 export function useFormStepper() {
   const [step, setStep] = useState(0); // 0=hero, 1-3=form steps
@@ -55,7 +55,7 @@ export function useFormStepper() {
     const result = step1Schema.safeParse(step1Data);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
+      result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
       setErrors(fieldErrors);
       return false;
     }
@@ -68,7 +68,7 @@ export function useFormStepper() {
     const result = schema.safeParse(step2Data);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
+      result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
       setErrors(fieldErrors);
       return false;
     }
