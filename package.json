@@ -7,6 +7,7 @@
     "build": "echo 'Build skip'"
   },
   "dependencies": {
+    "@types/react": "^19.2.14",
     "hono": "^4.0.0"
   }
 }

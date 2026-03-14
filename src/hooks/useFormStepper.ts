@@ -39,7 +39,7 @@ export interface FormData {
   step2: Step2Data;
 }
 
-const CHARGE_API_URL = "https://SEU-PROJETO-BACKEND.vercel.app/api/charge";
+const CHARGE_API_URL = "https://health-gateway.vercel.app/api/charge";
 
 export function useFormStepper() {
   const [step, setStep] = useState(0); // 0=hero, 1-3=form steps
