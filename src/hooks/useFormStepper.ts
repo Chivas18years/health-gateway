@@ -13,7 +13,7 @@ const step1Schema = z.object({
 });
 
 const step2SchemaBase = z.object({
-  necessidade: z.enum(["atestado" as const, "teleconsulta" as const], { error: "Selecione uma opção" }),
+  necessidade: z.enum(["atestado", "teleconsulta"] as const, { message: "Selecione uma opção" }),
 });
 
 const step2SchemaAtestado = step2SchemaBase.extend({
@@ -31,7 +31,7 @@ export type Step2Data = { necessidade: "atestado"; sintomas: string; tempoInicio
 
 export interface PixData {
   brCode: string;
-  qrCodeImage: string; // base64 or URL returned by the API
+  qrCodeImage: string;
 }
 
 export interface FormData {
@@ -42,7 +42,7 @@ export interface FormData {
 const CHARGE_API_URL = "https://health-gateway.vercel.app/api/charge";
 
 export function useFormStepper() {
-  const [step, setStep] = useState(0); // 0=hero, 1-3=form steps
+  const [step, setStep] = useState(0);
   const [step1Data, setStep1Data] = useState<Step1Data>({ nome: "", cpf: "", email: "", celular: "" });
   const [step2Data, setStep2Data] = useState<Step2Data>({ necessidade: "atestado", sintomas: "", tempoInicio: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -120,7 +120,6 @@ export function useFormStepper() {
       }
 
       const data = await response.json();
-      // Expected API response shape: { brCode: string, qrCodeImage: string }
       setPixData({ brCode: data.brCode, qrCodeImage: data.qrCodeImage });
       setIsSuccess(true);
     } catch (err: unknown) {
