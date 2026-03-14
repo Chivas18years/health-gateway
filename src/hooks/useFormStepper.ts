@@ -55,7 +55,7 @@ export function useFormStepper() {
     const result = step1Schema.safeParse(step1Data);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
+      result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
       setErrors(fieldErrors);
       return false;
     }
@@ -68,7 +68,7 @@ export function useFormStepper() {
     const result = schema.safeParse(step2Data);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
+      result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
       setErrors(fieldErrors);
       return false;
     }
