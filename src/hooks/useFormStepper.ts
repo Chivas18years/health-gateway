@@ -13,7 +13,7 @@ const step1Schema = z.object({
 });
 
 const step2SchemaBase = z.object({
-  necessidade: z.enum(["atestado", "teleconsulta"], { required_error: "Selecione uma opção" }),
+  necessidade: z.enum(["atestado" as const, "teleconsulta" as const], { error: "Selecione uma opção" }),
 });
 
 const step2SchemaAtestado = step2SchemaBase.extend({
