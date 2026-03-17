@@ -4,6 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import StepIndicator from "@/components/StepIndicator";
 import StepIdentificacao from "@/components/StepIdentificacao";
 import StepTriagem from "@/components/StepTriagem";
+import StepConfirmacao from "@/components/StepConfirmacao";
 import StepCheckout from "@/components/StepCheckout";
 import SuccessPage from "@/components/SuccessPage";
 
@@ -35,10 +36,10 @@ const Index = () => {
       </header>
 
       <main className="container px-4 py-8 md:py-12">
-        <div className="max-w-lg mx-auto">
-          <StepIndicator currentStep={step} />
+        <div className={`mx-auto ${step === 3 ? "max-w-3xl" : "max-w-lg"}`}>
+          <StepIndicator currentStep={Math.min(step, 3)} />
 
-          <div className="bg-card rounded-2xl border border-border/60 p-6 md:p-8 shadow-card">
+          <div className={`bg-card rounded-2xl border border-border/60 shadow-card ${step === 3 ? "p-6 md:p-8" : "p-6 md:p-8"}`}>
             {step === 1 && (
               <StepIdentificacao
                 data={step1Data}
@@ -57,6 +58,14 @@ const Index = () => {
               />
             )}
             {step === 3 && (
+              <StepConfirmacao
+                step1Data={step1Data}
+                step2Data={step2Data}
+                onConfirm={goNext}
+                onBack={goBack}
+              />
+            )}
+            {step === 4 && (
               <StepCheckout
                 necessidade={step2Data.necessidade}
                 isProcessing={isProcessing}
