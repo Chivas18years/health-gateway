@@ -9,8 +9,35 @@ interface StepTriagemProps {
   onBack: () => void;
 }
 
+const SINTOMA_OPTIONS = [
+  "Dor de Cabeça",
+  "Sintomas Gripais",
+  "Dores Musculares",
+  "Indisposição Gastrointestinal",
+  "Outros",
+];
+
 const StepTriagem = ({ data, errors, onChange, onNext, onBack }: StepTriagemProps) => {
   const isAtestado = data.necessidade === "atestado";
+  const atestadoData = isAtestado
+    ? (data as { necessidade: "atestado"; sintomas: string; sintomaOpcao: string; tempoInicio: string; viaTelemed: boolean })
+    : null;
+
+  const sintomaOpcao = atestadoData?.sintomaOpcao ?? "";
+  const sintomas = atestadoData?.sintomas ?? "";
+  const tempoInicio = atestadoData?.tempoInicio ?? "";
+  const viaTelemed = atestadoData?.viaTelemed ?? true;
+
+  function patchAtestado(patch: Partial<{ sintomas: string; sintomaOpcao: string; tempoInicio: string; viaTelemed: boolean }>) {
+    onChange({
+      necessidade: "atestado",
+      sintomas: sintomas,
+      sintomaOpcao: sintomaOpcao,
+      tempoInicio: tempoInicio,
+      viaTelemed: viaTelemed,
+      ...patch,
+    } as any);
+  }
 
   return (
     <div className="animate-fade-up">
@@ -27,7 +54,7 @@ const StepTriagem = ({ data, errors, onChange, onNext, onBack }: StepTriagemProp
             onClick={() =>
               onChange(
                 opt.value === "atestado"
-                  ? { necessidade: "atestado", sintomas: isAtestado ? (data as any).sintomas || "" : "", tempoInicio: isAtestado ? (data as any).tempoInicio || "" : "" }
+                  ? { necessidade: "atestado", sintomas: "", sintomaOpcao: "", tempoInicio: "", viaTelemed: true } as any
                   : { necessidade: "teleconsulta" }
               )
             }
@@ -51,23 +78,49 @@ const StepTriagem = ({ data, errors, onChange, onNext, onBack }: StepTriagemProp
 
       {isAtestado && (
         <div className="space-y-4 animate-fade-up">
+          {/* Symptom selector */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-2">
               <MessageSquare className="inline w-4 h-4 mr-1 -mt-0.5 text-muted-foreground" />
-              Descreva seus sintomas
+              Selecione o sintoma principal
             </label>
-            <textarea
-              value={(data as any).sintomas || ""}
-              onChange={(e) => onChange({ ...data, necessidade: "atestado", sintomas: e.target.value, tempoInicio: (data as any).tempoInicio || "" } as any)}
-              placeholder="Ex: Dor de cabeça intensa, febre e dor no corpo..."
-              rows={3}
-              className={`w-full p-3 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary resize-none transition-colors ${
-                errors.sintomas ? "border-destructive" : "border-input"
-              }`}
-            />
+            <div className="flex flex-wrap gap-2">
+              {SINTOMA_OPTIONS.map((op) => (
+                <button
+                  key={op}
+                  type="button"
+                  onClick={() => patchAtestado({ sintomaOpcao: op, sintomas: op !== "Outros" ? op : "" })}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${
+                    sintomaOpcao === op
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  {op}
+                </button>
+              ))}
+            </div>
             {errors.sintomas && <p className="text-xs text-destructive mt-1">{errors.sintomas}</p>}
           </div>
 
+          {/* Free text only for "Outros" */}
+          {sintomaOpcao === "Outros" && (
+            <div className="animate-fade-up">
+              <label className="block text-sm font-medium text-foreground mb-1.5">Descreva seus sintomas</label>
+              <textarea
+                value={sintomas}
+                onChange={(e) => patchAtestado({ sintomas: e.target.value })}
+                placeholder="Ex: Dor de cabeça intensa, febre e dor no corpo..."
+                rows={3}
+                className={`w-full p-3 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary resize-none transition-colors ${
+                  errors.sintomas ? "border-destructive" : "border-input"
+                }`}
+              />
+              {errors.sintomas && <p className="text-xs text-destructive mt-1">{errors.sintomas}</p>}
+            </div>
+          )}
+
+          {/* Início dos sintomas */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               <CalendarClock className="inline w-4 h-4 mr-1 -mt-0.5 text-muted-foreground" />
@@ -75,14 +128,39 @@ const StepTriagem = ({ data, errors, onChange, onNext, onBack }: StepTriagemProp
             </label>
             <input
               type="text"
-              value={(data as any).tempoInicio || ""}
-              onChange={(e) => onChange({ ...data, necessidade: "atestado", sintomas: (data as any).sintomas || "", tempoInicio: e.target.value } as any)}
+              value={tempoInicio}
+              onChange={(e) => patchAtestado({ tempoInicio: e.target.value })}
               placeholder="Ex: Há 2 dias"
               className={`w-full h-11 px-4 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors ${
                 errors.tempoInicio ? "border-destructive" : "border-input"
               }`}
             />
             {errors.tempoInicio && <p className="text-xs text-destructive mt-1">{errors.tempoInicio}</p>}
+          </div>
+
+          {/* Telemedicina toggle */}
+          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Exibir "via Telemedicina" no atestado?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {viaTelemed ? 'Aparecerá: "via telemedicina"' : 'Aparecerá: "em consulta médica"'}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={viaTelemed}
+              onClick={() => patchAtestado({ viaTelemed: !viaTelemed })}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring/30 ${
+                viaTelemed ? "bg-primary" : "bg-muted-foreground/30"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${
+                  viaTelemed ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
         </div>
       )}

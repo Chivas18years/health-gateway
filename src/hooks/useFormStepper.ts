@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { z } from "zod";
 
 // --- Validation Schemas ---
@@ -18,7 +18,8 @@ const step2SchemaBase = z.object({
 
 const step2SchemaAtestado = step2SchemaBase.extend({
   necessidade: z.literal("atestado"),
-  sintomas: z.string().trim().min(10, "Descreva os sintomas com mais detalhes (mín. 10 caracteres)").max(1000),
+  sintomaOpcao: z.string().trim().min(1, "Selecione um sintoma"),
+  sintomas: z.string().trim().min(1, "Descreva os sintomas"),
   tempoInicio: z.string().trim().min(1, "Informe quando os sintomas começaram"),
 });
 
@@ -27,7 +28,14 @@ const step2SchemaTeleconsulta = step2SchemaBase.extend({
 });
 
 export type Step1Data = z.infer<typeof step1Schema>;
-export type Step2Data = { necessidade: "atestado"; sintomas: string; tempoInicio: string } | { necessidade: "teleconsulta" };
+export type Step2DataAtestado = {
+  necessidade: "atestado";
+  sintomaOpcao: string;
+  sintomas: string;
+  tempoInicio: string;
+  viaTelemed: boolean;
+};
+export type Step2Data = Step2DataAtestado | { necessidade: "teleconsulta" };
 
 export interface PixData {
   brCode: string;
@@ -40,16 +48,34 @@ export interface FormData {
 }
 
 const CHARGE_API_URL = "https://health-gateway.vercel.app/api/charge";
+const MAX_STEP = 4;
 
 export function useFormStepper() {
   const [step, setStep] = useState(0);
   const [step1Data, setStep1Data] = useState<Step1Data>({ nome: "", cpf: "", email: "", celular: "" });
-  const [step2Data, setStep2Data] = useState<Step2Data>({ necessidade: "atestado", sintomas: "", tempoInicio: "" });
+  const [step2Data, setStep2Data] = useState<Step2Data>({ necessidade: "atestado", sintomaOpcao: "", sintomas: "", tempoInicio: "", viaTelemed: true });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // --- Browser History API ---
+  useEffect(() => {
+    if (step > 0) {
+      window.history.pushState({ step }, "", window.location.pathname);
+    }
+  }, [step]);
+
+  useEffect(() => {
+    const onPopState = (e: PopStateEvent) => {
+      const prevStep = e.state?.step ?? 0;
+      setErrors({});
+      setStep(prevStep);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   const validateStep1 = useCallback(() => {
     const result = step1Schema.safeParse(step1Data);
@@ -64,13 +90,22 @@ export function useFormStepper() {
   }, [step1Data]);
 
   const validateStep2 = useCallback(() => {
-    const schema = step2Data.necessidade === "atestado" ? step2SchemaAtestado : step2SchemaTeleconsulta;
-    const result = schema.safeParse(step2Data);
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
-      setErrors(fieldErrors);
-      return false;
+    if (step2Data.necessidade === "atestado") {
+      const result = step2SchemaAtestado.safeParse(step2Data);
+      if (!result.success) {
+        const fieldErrors: Record<string, string> = {};
+        result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
+        setErrors(fieldErrors);
+        return false;
+      }
+    } else {
+      const result = step2SchemaTeleconsulta.safeParse(step2Data);
+      if (!result.success) {
+        const fieldErrors: Record<string, string> = {};
+        result.error.issues.forEach((e) => { fieldErrors[e.path[0] as string] = e.message; });
+        setErrors(fieldErrors);
+        return false;
+      }
     }
     setErrors({});
     return true;
@@ -80,7 +115,7 @@ export function useFormStepper() {
     if (step === 1 && !validateStep1()) return;
     if (step === 2 && !validateStep2()) return;
     setErrors({});
-    setStep((s) => Math.min(s + 1, 4));
+    setStep((s) => Math.min(s + 1, MAX_STEP));
   }, [step, validateStep1, validateStep2]);
 
   const goBack = useCallback(() => {
@@ -88,12 +123,16 @@ export function useFormStepper() {
     setStep((s) => Math.max(s - 1, 1));
   }, []);
 
-  const startForm = useCallback(() => setStep(1), []);
+  const startForm = useCallback(() => {
+    window.history.pushState({ step: 1 }, "", window.location.pathname);
+    setStep(1);
+  }, []);
 
   const submitPayment = useCallback(async () => {
     setIsProcessing(true);
     setPaymentError(null);
     try {
+      const atestado = step2Data.necessidade === "atestado" ? step2Data : null;
       const response = await fetch(CHARGE_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,9 +145,9 @@ export function useFormStepper() {
           },
           service: {
             necessidade: step2Data.necessidade,
-            ...(step2Data.necessidade === "atestado" && {
-              sintomas: step2Data.sintomas,
-              tempoInicio: step2Data.tempoInicio,
+            ...(atestado && {
+              sintomas: atestado.sintomas,
+              tempoInicio: atestado.tempoInicio,
             }),
           },
         }),

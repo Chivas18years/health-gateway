@@ -27,8 +27,14 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
   const cpfMasked = maskCpf(step1Data.cpf);
   const today = formatDate();
 
-  const sintomas = isAtestado ? (step2Data as { necessidade: "atestado"; sintomas: string; tempoInicio: string }).sintomas : "";
-  const tempoInicio = isAtestado ? (step2Data as { necessidade: "atestado"; sintomas: string; tempoInicio: string }).tempoInicio : "";
+  const atestadoData = isAtestado
+    ? (step2Data as { necessidade: "atestado"; sintomas: string; tempoInicio: string; viaTelemed: boolean })
+    : null;
+
+  const sintomas = atestadoData?.sintomas ?? "";
+  const tempoInicio = atestadoData?.tempoInicio ?? "";
+  const viaTelemed = atestadoData?.viaTelemed ?? true;
+  const modalidadeTexto = viaTelemed ? "via telemedicina" : "em consulta médica";
 
   const valor = isAtestado ? "R$ 59,90" : "R$ 89,90";
   const servicoLabel = isAtestado ? "Atestado Médico" : "Teleconsulta por Videoconferência";
@@ -43,7 +49,6 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* ── Certificate Preview ── */}
         <div className="lg:col-span-3 relative">
-          {/* Paper card */}
           <div
             className="relative rounded-xl overflow-hidden border border-border bg-white text-foreground"
             style={{ boxShadow: "0 4px 24px hsl(220 20% 14% / 0.10), 0 1px 4px hsl(220 20% 14% / 0.06)" }}
@@ -108,14 +113,14 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
                       Atesto que o(a) Sr(a).{" "}
                       <strong className="text-foreground">{step1Data.nome || "_______________"}</strong>, portador(a) do
                       CPF <strong className="text-foreground">{cpfMasked}</strong>, compareceu à consulta médica
-                      realizada por telemedicina nesta data e apresentou os seguintes sintomas:
+                      realizada <strong className="text-foreground">{modalidadeTexto}</strong> nesta data e apresentou os seguintes sintomas:
                     </p>
                     <p className="rounded-lg bg-muted/60 border border-border/50 px-3 py-2 italic text-foreground/70">
                       "{sintomas || "Sintomas não informados."}"
                     </p>
                     <p>
-                      O paciente relatou início dos sintomas há{" "}
-                      <strong className="text-foreground">{tempoInicio || "___"}</strong>. Recomendo repouso pelo
+                      O paciente relatou início dos sintomas{" "}
+                      <strong className="text-foreground">{tempoInicio ? `há ${tempoInicio}` : "___"}</strong>. Recomendo repouso pelo
                       período necessário para sua recuperação.
                     </p>
                     <p>
@@ -177,7 +182,6 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
         {/* ── Action Panel ── */}
         <div className="lg:col-span-2 flex flex-col justify-between gap-4">
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            {/* Title */}
             <div className="flex items-start gap-2.5">
               <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
@@ -191,7 +195,6 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
               </div>
             </div>
 
-            {/* Summary row */}
             <div className="rounded-lg border border-border/70 bg-surface px-4 py-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -202,7 +205,6 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
               </div>
             </div>
 
-            {/* Trust badges */}
             <div className="flex flex-wrap gap-2">
               {[
                 { icon: ShieldCheck, text: "Dados protegidos" },
@@ -219,10 +221,9 @@ const StepConfirmacao = ({ step1Data, step2Data, onConfirm, onBack }: StepConfir
             </div>
           </div>
 
-          {/* CTA Button */}
           <button
             onClick={onConfirm}
-            className="w-full h-13 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-hover transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-elevated"
+            className="w-full rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-hover transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-elevated"
             style={{ height: "52px" }}
           >
             Confirmar e Gerar Pix

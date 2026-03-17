@@ -8,12 +8,21 @@ interface StepIdentificacaoProps {
   onNext: () => void;
 }
 
-const fields = [
-  { key: "nome" as const, label: "Nome completo", icon: User, placeholder: "Maria da Silva", type: "text" },
-  { key: "cpf" as const, label: "CPF", icon: CreditCard, placeholder: "000.000.000-00", type: "text" },
-  { key: "email" as const, label: "E-mail", icon: Mail, placeholder: "seu@email.com", type: "email" },
-  { key: "celular" as const, label: "Celular / WhatsApp", icon: Phone, placeholder: "(11) 99999-9999", type: "tel" },
-];
+function maskCpf(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+function maskPhone(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  return value;
+}
 
 const StepIdentificacao = ({ data, errors, onChange, onNext }: StepIdentificacaoProps) => {
   return (
@@ -22,24 +31,71 @@ const StepIdentificacao = ({ data, errors, onChange, onNext }: StepIdentificacao
       <p className="text-sm text-muted-foreground mb-6">Precisamos de algumas informações para continuar.</p>
 
       <div className="space-y-4">
-        {fields.map((f) => (
-          <div key={f.key}>
-            <label className="block text-sm font-medium text-foreground mb-1.5">{f.label}</label>
-            <div className="relative">
-              <f.icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type={f.type}
-                value={data[f.key]}
-                placeholder={f.placeholder}
-                onChange={(e) => onChange({ ...data, [f.key]: e.target.value })}
-                className={`w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors ${
-                  errors[f.key] ? "border-destructive" : "border-input"
-                }`}
-              />
-            </div>
-            {errors[f.key] && <p className="text-xs text-destructive mt-1">{errors[f.key]}</p>}
+        {/* Nome */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">Nome completo</label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={data.nome}
+              placeholder="Maria da Silva"
+              onChange={(e) => onChange({ ...data, nome: e.target.value })}
+              className={`w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors ${errors.nome ? "border-destructive" : "border-input"}`}
+            />
           </div>
-        ))}
+          {errors.nome && <p className="text-xs text-destructive mt-1">{errors.nome}</p>}
+        </div>
+
+        {/* CPF */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">CPF</label>
+          <div className="relative">
+            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              inputMode="numeric"
+              value={data.cpf}
+              placeholder="000.000.000-00"
+              onChange={(e) => onChange({ ...data, cpf: maskCpf(e.target.value) })}
+              className={`w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors ${errors.cpf ? "border-destructive" : "border-input"}`}
+            />
+          </div>
+          {errors.cpf && <p className="text-xs text-destructive mt-1">{errors.cpf}</p>}
+        </div>
+
+        {/* E-mail */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">E-mail</label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="email"
+              value={data.email}
+              placeholder="seu@email.com"
+              onChange={(e) => onChange({ ...data, email: e.target.value })}
+              className={`w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors ${errors.email ? "border-destructive" : "border-input"}`}
+            />
+          </div>
+          {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
+        </div>
+
+        {/* Celular */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">Celular / WhatsApp</label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="tel"
+              inputMode="numeric"
+              value={data.celular}
+              placeholder="(11) 99999-9999"
+              onChange={(e) => onChange({ ...data, celular: maskPhone(e.target.value) })}
+              className={`w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors ${errors.celular ? "border-destructive" : "border-input"}`}
+            />
+          </div>
+          {errors.celular && <p className="text-xs text-destructive mt-1">{errors.celular}</p>}
+        </div>
       </div>
 
       <button
