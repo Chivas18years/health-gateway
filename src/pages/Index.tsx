@@ -4,6 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import StepIndicator from "@/components/StepIndicator";
 import StepIdentificacao from "@/components/StepIdentificacao";
 import StepTriagem from "@/components/StepTriagem";
+import StepConfirmacao from "@/components/StepConfirmacao";
 import StepCheckout from "@/components/StepCheckout";
 import SuccessPage from "@/components/SuccessPage";
 

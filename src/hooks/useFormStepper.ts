@@ -80,7 +80,7 @@ export function useFormStepper() {
     if (step === 1 && !validateStep1()) return;
     if (step === 2 && !validateStep2()) return;
     setErrors({});
-    setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(s + 1, 4));
   }, [step, validateStep1, validateStep2]);
 
   const goBack = useCallback(() => {
