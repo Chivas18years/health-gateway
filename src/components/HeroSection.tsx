@@ -1,4 +1,5 @@
 import { ShieldCheck, Clock, FileText, Video, Stethoscope, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
   onStart: () => void;
@@ -10,12 +11,12 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
       {/* Header */}
       <header className="w-full border-b border-border/60">
         <div className="container flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Stethoscope className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold tracking-tight text-foreground">MedDigital</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Lock className="w-3.5 h-3.5" />
             <span>Ambiente seguro</span>

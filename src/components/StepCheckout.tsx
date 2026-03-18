@@ -88,6 +88,12 @@ const StepCheckout = ({ necessidade, isProcessing, pixData, paymentError, onPay,
         )}
       </button>
 
+      {/* Payment instruction */}
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-800">
+        <span className="shrink-0">⚠️</span>
+        <span>O documento original será liberado nesta tela imediatamente após o pagamento. <strong>Não feche esta janela.</strong></span>
+      </div>
+
       {/* Payment error */}
       {paymentError && (
         <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 mb-4 text-sm text-destructive">
