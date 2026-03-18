@@ -1,4 +1,5 @@
 import { Stethoscope, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useFormStepper } from "@/hooks/useFormStepper";
 import HeroSection from "@/components/HeroSection";
 import StepIndicator from "@/components/StepIndicator";

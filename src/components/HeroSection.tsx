@@ -73,6 +73,17 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
           </div>
         </div>
       </main>
+
+      <footer className="border-t border-border/60 py-5">
+        <div className="container px-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            © 2026 MedDigital Telemedicina.{" "}
+            <a href="/termos" className="underline underline-offset-2 hover:text-foreground transition-colors">
+              Termos de Uso e Privacidade
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
