@@ -1,4 +1,5 @@
 import { Stethoscope, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useFormStepper } from "@/hooks/useFormStepper";
 import HeroSection from "@/components/HeroSection";
 import StepIndicator from "@/components/StepIndicator";
@@ -22,12 +23,12 @@ const Index = () => {
       {/* Header */}
       <header className="w-full border-b border-border/60 bg-background">
         <div className="container flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
+          <Link to="/" onClick={() => window.location.replace("/")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
               <Stethoscope className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
             <span className="text-sm font-semibold tracking-tight text-foreground">MedDigital</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Lock className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Dados protegidos</span>
@@ -78,6 +79,17 @@ const Index = () => {
           </div>
         </div>
       </main>
+
+      <footer className="border-t border-border/60 bg-background py-5 mt-8">
+        <div className="container px-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            © 2026 MedDigital Telemedicina.{" "}
+            <a href="/termos" className="underline underline-offset-2 hover:text-foreground transition-colors">
+              Termos de Uso e Privacidade
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
