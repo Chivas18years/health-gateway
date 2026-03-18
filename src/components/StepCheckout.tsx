@@ -73,7 +73,7 @@ const StepCheckout = ({ necessidade, isProcessing, pixData, paymentError, onPay,
       {/* Copy PIX code */}
       <button
         onClick={handleCopy}
-        className="w-full flex items-center justify-center gap-2 h-11 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors mb-6"
+        className="w-full flex items-center justify-center gap-2 h-11 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors mb-3"
       >
         {copied ? (
           <>
