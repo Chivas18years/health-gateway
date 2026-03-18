@@ -23,12 +23,12 @@ const Index = () => {
       {/* Header */}
       <header className="w-full border-b border-border/60 bg-background">
         <div className="container flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
+          <Link to="/" onClick={() => window.location.replace("/")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
               <Stethoscope className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
             <span className="text-sm font-semibold tracking-tight text-foreground">MedDigital</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Lock className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Dados protegidos</span>
